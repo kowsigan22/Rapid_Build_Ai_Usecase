@@ -19,7 +19,7 @@ def load_prompt(path: str, state: BuildState) -> str:
 
 def code_generator_agent(state: BuildState) -> BuildState:
     prompt = load_prompt("prompts/code_generation.txt", state)
-    print("error_context",state["error_context"])
+    print(state[])
     try:
         code = call_llm(prompt)
         print("LLM OUTPUT >>>", code)

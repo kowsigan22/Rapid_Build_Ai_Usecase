@@ -10,6 +10,6 @@ The previous code failed with this runtime error:
 
 Fix project structure, dependencies, or run command.
 """
-    print("error_prompt_agent check 1")
+    print("error_prompt_agent check ")
     state["status"] = "REPAIRING"
     return state
