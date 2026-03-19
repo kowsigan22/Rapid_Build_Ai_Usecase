@@ -1,6 +1,0 @@
-from typing import List, Dict
-class ItemsDB:
-    def __init__(self):
-        self.items = []
-    def get_all_items(self) -> List[Dict]: ...
-    def create_item(self, item: Dict) -> Dict: ...
