@@ -1,4 +1,0 @@
-venv/
-.venv/
-generated_apps/
-*.pyc

@@ -2,3 +2,4 @@ venv/
 .venv/
 generated_apps/
 .generated_apps/
+.history/
