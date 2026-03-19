@@ -3,3 +3,7 @@ venv/
 generated_apps/
 .generated_apps/
 .history/
+*.log
+__pycache__/
+*.pyc
+.env
