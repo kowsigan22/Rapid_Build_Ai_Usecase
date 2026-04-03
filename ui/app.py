@@ -41,12 +41,32 @@ if "current_port" not in st.session_state:
 
 
 # ------------------------------------------------
-# USER INPUT
+# USER INPUT (Modified for 3 Prompts)
 # ------------------------------------------------
 
-user_prompt = st.text_area(
-    "Describe the Python app you want",
-    placeholder="Create a FastAPI app with GET and POST endpoints"
+st.subheader("📝 Build Specifications")
+
+# Technology Stack and Credentials in columns
+col1, col2 = st.columns(2)
+
+with col1:
+    tech_stack = st.text_input(
+        "Technology Stack", 
+        placeholder="e.g., Python, FastAPI, SQLite, TailWind CSS"
+    )
+
+with col2:
+    credentials = st.text_input(
+        "Credentials / Configuration", 
+        placeholder="e.g., API_KEY=xyz, DB_PASSWORD=admin",
+        type="password"  # Masks sensitive input
+    )
+
+# Large text area for the main logic
+usecase_description = st.text_area(
+    "Description of the Usecase",
+    placeholder="Describe the specific functionality and logic of the app...",
+    height=150
 )
 
 uploaded_file = st.file_uploader(
@@ -61,36 +81,50 @@ run_button = st.button("🚀 Build & Run")
 # BUILD & RUN WORKFLOW
 # ------------------------------------------------
 
-if run_button and user_prompt.strip():
+if run_button:
+    if not usecase_description.strip():
+        st.error("Please provide a description of the usecase.")
+    else:
+        with st.spinner("Running AI agents..."):
 
-    with st.spinner("Running AI agents..."):
+            temp_file_path = None
 
-        temp_file_path = None
+            if uploaded_file:
+                with tempfile.NamedTemporaryFile(delete=False, suffix=".csv") as f:
+                    f.write(uploaded_file.getbuffer())
+                    temp_file_path = f.name
 
-        if uploaded_file:
-            with tempfile.NamedTemporaryFile(delete=False, suffix=".csv") as f:
-                f.write(uploaded_file.getbuffer())
-                temp_file_path = f.name
+            app = build_graph()
 
-        app = build_graph()
+            # We format the 3 inputs into a single prompt for the existing 'user_prompt' field
+            formatted_prompt = f"""
+### TECHNOLOGY STACK ###
+{tech_stack if tech_stack else "Not specified"}
 
-        initial_state: BuildState = {
-            "user_prompt": user_prompt,
-            "generated_files": None,
-            "execution_descriptor": None,
-            "execution_output": None,
-            "exposed_urls": None,
-            "input_file_path": temp_file_path,
-            "status": "STARTED",
-            "retry_count": 0,
-            "error": None,
-            "error_context": None
-        }
+### USECASE DESCRIPTION ###
+{usecase_description}
 
-        final_state = app.invoke(initial_state)
+### CREDENTIALS/CONFIG ###
+{credentials if credentials else "None provided"}
+            """
 
-        # SAVE RESULT
-        st.session_state.final_state = final_state
+            initial_state: BuildState = {
+                "user_prompt": formatted_prompt,
+                "generated_files": None,
+                "execution_descriptor": None,
+                "execution_output": None,
+                "exposed_urls": None,
+                "input_file_path": temp_file_path,
+                "status": "STARTED",
+                "retry_count": 0,
+                "error": None,
+                "error_context": None
+            }
+
+            final_state = app.invoke(initial_state)
+
+            # SAVE RESULT
+            st.session_state.final_state = final_state
 
 
 # ------------------------------------------------
@@ -159,6 +193,7 @@ if st.session_state.final_state:
 
         else:
             st.info("No exposed APIs reported")
+
     state = st.session_state.get("final_state")
 
     health = None
